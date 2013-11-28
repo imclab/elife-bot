@@ -1,8 +1,34 @@
-        // document_url: "data/about/index.xml"
+
+        // Local Example
+        // document_url: "data/00778/index.xml"
+
+        // Remote Example 00778
+        // document_url: "https://s3.amazonaws.com/elife-cdn/elife-articles/00778/elife00778.xml"
+
+        // Remote Example 01608
+        // document_url: "https://s3.amazonaws.com/elife-cdn/elife-articles/01608/elife01608.xml"
+
+        // Remote Example 01541
+        // document_url: "https://s3.amazonaws.com/elife-cdn/elife-articles/01541/elife01541.xml"
+        
+        // Remote Example 00311
+        // document_url: "https://s3.amazonaws.com/elife-cdn/elife-articles/00311/elife00311.xml"
       });
 
       $(function() {
         app.start();
+
+        if (isTouchDevice()) {
+          $('#container').addClass('touchable');
+        }
+
+        if (isIOSDevice()) {
+          $('#container').addClass('ios');
+        }
+
+        if (isIphone()) {
+          $('#container').addClass('iphone');
+        }
       });
 
     </script>
