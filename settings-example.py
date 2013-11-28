@@ -55,6 +55,12 @@ class dev():
 	# Bot S3 settings
 	bot_bucket = 'elife-bot-dev'
 	
+	# EJP S3 settings
+	ejp_bucket = 'elife-ejp-ftp-dev'
+	
+	# Templates S3 settings
+	templates_bucket = 'elife-templates-dev'
+	
 	# Logging
 	setLevel = "INFO"
 	
@@ -101,6 +107,12 @@ class live():
 	
 	# Bot S3 settings
 	bot_bucket = 'elife-bot'
+	
+	# EJP S3 settings
+	ejp_bucket = 'elife-ejp-ftp'
+	
+	# Templates S3 settings
+	templates_bucket = 'elife-templates'
 	
 	# Logging
 	setLevel = "INFO"

@@ -323,7 +323,7 @@ class SimpleDB(object):
 		"""
 		From the SimpleDB domain for the EmailQueue, return a list of matching item to the attributes
 		  query_type:               Type of query: "items" return items, "count" return a count of items
-			sent_status:              True, False, None - Booleans will be converted to strings for the query
+			sent_status:              True, False, null - Booleans will be converted to strings for the query
 			email_type:               template type or email type
 			doi_id:                   five digit numeric string as the unique portion of the DOI
 			date_scheduled_before:    only return items scheduled to send before the date provided, in the date format
@@ -380,14 +380,15 @@ class SimpleDB(object):
 		limit_clause = ""
 		
 		if(sent_status):
-			where_clause += where_delimiter + " sent_status = '" + str(sent_status) + "'"
-			where_delimiter = " and"
-		else:
-			where_clause += where_delimiter + " sent_status is null"
-			where_delimiter = " and"
+			if(sent_status == "null"):
+				where_clause += where_delimiter + " sent_status is null"
+				where_delimiter = " and"
+			else:
+				where_clause += where_delimiter + " sent_status = '" + str(sent_status) + "'"
+				where_delimiter = " and"
 		
 		if(email_type):
-			where_clause += where_delimiter + " email_type = '" + escape(email_type) + "'"
+			where_clause += where_delimiter + " email_type = '" + self.escape(email_type) + "'"
 			where_delimiter = " and"
 		
 		if(doi_id):
