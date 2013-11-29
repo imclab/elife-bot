@@ -85,4 +85,9 @@ def i_have_the_article_tweet_url(step, tweet_url):
 @step('I have the article pub_date_timestamp (\d+)')
 def i_have_the_article_pub_date_timestamp(step, pub_date_timestamp):
   assert int(world.article.pub_date_timestamp) == int(pub_date_timestamp), \
-  "Got pub_date_timestamp %s" % world.article.pub_date_timestamp 
+  "Got pub_date_timestamp %s" % world.article.pub_date_timestamp
+  
+@step('I have the article article_title (.+)')
+def i_have_the_article_article_title(step, article_title):
+  assert world.article.article_title == article_title, \
+  "Got article_title %s" % world.article.article_title 

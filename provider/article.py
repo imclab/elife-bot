@@ -123,6 +123,9 @@ class article(object):
       self.pub_date = self.parse_pub_date(soup)
       if(self.pub_date):
         self.pub_date_timestamp = self.get_pub_date_timestamp(self.pub_date)
+      
+      self.article_title = self.parse_article_title(soup)
+      
       return True
     except:
       return False
@@ -277,6 +280,10 @@ class article(object):
       pass
   
     return date_string
+    
+  def parse_article_title(self, soup):
+    title_text = self.extract_node_text(soup, "article-title")
+    return title_text
     
   def extract_first_node(self, soup, nodename):
     tags = self.extract_nodes(soup, nodename)
