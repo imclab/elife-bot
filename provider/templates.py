@@ -3,6 +3,7 @@ import random
 import datetime
 import calendar
 import time
+import os
 from operator import itemgetter, attrgetter
 
 from jinja2 import Template, Environment, FileSystemLoader
@@ -42,7 +43,8 @@ class Templates(object):
     
     # Track whether templates are downloaded and ready for use
     self.email_templates_warmed = False
-    
+    self.lens_templates_warmed = False
+
   def connect(self):
     """
     Connect to S3 using the settings
@@ -314,4 +316,58 @@ class Templates(object):
       return headers
     else:
       return None
+    
+  def get_lens_templates_list(self):
+    """
+    Get a list of lens templates 
+    in order to support LensArticle activity
+    """
+    template_list = []
+    template_list.append("lens_article.html")
+
+    return template_list
   
+  def copy_lens_templates(self, from_dir):
+    """
+    Prepare the tmp_dir jinja template directory
+    to hold template files used in author publication
+    and editor publication emails
+    """
+    template_list = self.get_lens_templates_list()
+    
+    template_missing = False
+    
+    if(self.fs is None):
+      self.fs = self.get_fs()
+    
+    for t in template_list:
+      filename = from_dir + os.sep + t
+      try:
+        self.fs.write_document_to_tmp_dir(document = filename, filename = t)
+      except:
+        template_missing = True
+        
+    if(template_missing):
+      self.lens_templates_warmed = False
+    elif(template_missing is False):
+      self.lens_templates_warmed = True
+  
+  def get_lens_article_html(self, from_dir, xml_file_url, article):
+    """
+    Given data objects, load the jinja environment,
+    get the template, render it and return the content
+    """
+
+    # Warm the template files
+    if(self.lens_templates_warmed is not True):
+      self.copy_lens_templates(from_dir)
+      
+    # Check again, in case the template warm was not successful
+    if(self.lens_templates_warmed is True):
+  
+      jinja_env = self.get_jinja_env()
+      tmpl = self.get_jinja_template(jinja_env, "lens_article.html")
+      content = tmpl.render(xml_file_url = xml_file_url, article = article)
+      return content
+    else:
+      return None

@@ -13,6 +13,8 @@ import boto.s3
 from boto.s3.connection import S3Connection
 
 import provider.filesystem as fslib
+import provider.templates as templatelib
+import provider.article as articlelib
 
 """
 LensArticle activity
@@ -33,6 +35,15 @@ class activity_LensArticle(activity.activity):
 		
 		# Create the filesystem provider
 		self.fs = fslib.Filesystem(self.get_tmp_dir())
+		
+		# Templates provider
+		self.templates = templatelib.Templates(settings, self.get_tmp_dir())
+		
+		# article data provider
+		self.article = articlelib.article(settings, self.get_tmp_dir())
+		
+		# Default templates directory
+		self.from_dir = "template"
 
 	def do_activity(self, data = None):
 		"""
@@ -41,19 +52,15 @@ class activity_LensArticle(activity.activity):
 		if(self.logger):
 			self.logger.info('data: %s' % json.dumps(data, sort_keys=True, indent=4))
 		
-		# Temporary use of local header and footer files
-		self.header_html_file = "template/lens_article_header.html"
-		self.footer_html_file = "template/lens_article_footer.html"
-		
 		elife_id = data["data"]["elife_id"]
 		
 		xml_file_url = self.get_xml_file_url(elife_id)
 		
-		article_s3key = self.get_article_s3key(elife_id)
+		lens_article_s3key = self.get_lens_article_s3key(elife_id)
 		
 		filename = "index.html"
 		
-		article_html = self.get_article_html(xml_file_url)
+		article_html = self.get_article_html(xml_file_url = xml_file_url)
 		
 		# Write the document to disk first
 		self.fs.write_content_to_document(article_html, filename)
@@ -65,11 +72,11 @@ class activity_LensArticle(activity.activity):
 		bucket_name = self.settings.lens_bucket
 		bucket = s3_conn.lookup(bucket_name)
 		s3key = boto.s3.key.Key(bucket)
-		s3key.key = article_s3key
+		s3key.key = lens_article_s3key
 		s3key.set_contents_from_filename(self.get_document(), replace=True)
 		
 		if(self.logger):
-			self.logger.info('LensArticle created for: %s' % article_s3key)
+			self.logger.info('LensArticle created for: %s' % lens_article_s3key)
 
 		return True
 	
@@ -82,41 +89,42 @@ class activity_LensArticle(activity.activity):
 		
 		return xml_url
 	
-	def get_article_s3key(self, elife_id):
+	def get_lens_article_s3key(self, elife_id):
 		"""
 		Given an eLife article DOI ID (5 digits) assemble the
 		S3 key name for where to save the article index.html page
 		"""
-		article_s3key = "/" + elife_id + "/index.html"
+		lens_article_s3key = "/" + elife_id + "/index.html"
 		
-		return article_s3key
+		return lens_article_s3key
 		
-	def get_header_html(self):
-		f = open(self.header_html_file, "rb")
-		content = f.read()
-		f.close()
-		return content
-	
-	def get_footer_html(self):
-		f = open(self.footer_html_file, "rb")
-		content = f.read()
-		f.close()
-		return content
-		
-	def get_article_html(self, xml_file_url):
+	def get_article_html(self, xml_file_url, from_dir = None):
 		"""
 		Given the URL of the article XML file, create a lens article index.html page
 		using header, footer or template, as required
 		"""
-		
-		header_html = self.get_header_html()
-		footer_html = self.get_footer_html()
-		
-		document_url_html = "\n" + '        document_url: "' + xml_file_url + '"' + "\n"
-		
-		article_html = header_html + document_url_html + footer_html
-
+		article_html = None
+		if(from_dir is None):
+			from_dir = self.from_dir
+		warmed = self.warm_templates(from_dir)
+		if(warmed is True):
+			article_html = self.templates.get_lens_article_html(from_dir, xml_file_url)
+			
 		return article_html
+		
+	def warm_templates(self, from_dir):
+		# Prepare templates
+		self.templates.copy_lens_templates(from_dir)
+		if(self.templates.lens_templates_warmed is not True):
+			if(self.logger):
+				self.logger.info('LensArticle email templates did not warm successfully')
+			# Stop now! Return False if we do not have the necessary files
+			return False
+		else:
+			if(self.logger):
+				self.logger.info('LensArticle email templates warmed')
+			return True
+		return None
 		
 	def get_document(self):
 		"""

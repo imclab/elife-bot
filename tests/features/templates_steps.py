@@ -59,11 +59,30 @@ def i_get_email_templates_list_from_the_template_provider(step):
   assert world.templates_list is not None, \
     "Got templates_list %s" % world.templates_list
 
+@step('I get lens templates list from the template provider')
+def i_get_lens_templates_list_from_the_template_provider(step):
+  world.templates_list = world.templates.get_lens_templates_list()
+  assert world.templates_list is not None, \
+    "Got templates_list %s" % world.templates_list
+  
 @step('I read each base dir plus templates list document to content')
 def i_read_each_base_dir_plus_templates_list_document_to_content(step):
   template_count = 0
   for template_name in world.templates_list:
     filename = world.base_dir + template_name
+    f = open(filename)
+    content = f.read()
+    f.close()
+    world.templates.save_template_contents_to_tmp_dir(template_name, content)
+    template_count = template_count + 1
+  assert len(world.templates_list) == template_count, \
+    "Processed %s of %s templates" % (template_count, len(world.templates_list))
+  
+@step('I read each from dir plus templates list document to content')
+def i_read_each_from_dir_plus_templates_list_document_to_content(step):
+  template_count = 0
+  for template_name in world.templates_list:
+    filename = world.from_dir + template_name
     f = open(filename)
     content = f.read()
     f.close()
@@ -107,3 +126,40 @@ def i_have_the_email_body_email_body(step, email_body):
   email_body_newline_replaced = world.email_body.replace("\n", "\\n")
   assert email_body_newline_replaced == email_body, \
     "Got email_body %s" % email_body_newline_replaced
+
+@step('I have a from directory (\S+)')
+def i_have_a_from_directory(step, from_dir):
+  world.from_dir = from_dir
+  assert world.from_dir is not None, \
+    "Got from_dir %s" % world.from_dir
+
+@step('I have the xml file url (.+)')
+def i_have_the_xml_file_url(step, xml_file_url):
+  world.xml_file_url = xml_file_url
+  assert world.xml_file_url is not None, \
+    "Got xml_file_url %s" % world.xml_file_url
+
+@step('I copy lens templates using the templates provider')
+def i_copy_lens_templates_using_the_templates_provider(step):
+  world.templates.copy_lens_templates(world.from_dir)
+
+@step('I set the templates provider lens templates warmed to True')
+def i_set_the_templates_provider_lens_templates_warmed_to_true(step):
+  world.templates.lens_templates_warmed = True
+  assert world.templates.lens_templates_warmed is True, \
+    "Got lens_templates_warmed %s" % world.templates.lens_templates_warmed
+    
+@step('I get lens article html from the templates provider')
+def i_get_lens_article_html_from_the_templates_provider(step):
+  world.article_html = world.templates.get_lens_article_html(
+    from_dir     = world.base_dir,
+    xml_file_url = world.xml_file_url,
+    article      = world.article)
+  assert world.article_html is not None, \
+    "Got article_html %s" % world.article_html
+    
+@step('I have the article html (.+)')
+def i_have_the_article_html_article_html(step, article_html):
+  article_html_newline_replaced = world.article_html.replace("\n", "\\n")
+  assert article_html_newline_replaced == article_html, \
+    "Got article_html %s" % article_html_newline_replaced
