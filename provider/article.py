@@ -4,6 +4,7 @@ import random
 import datetime
 import calendar
 import time
+import os
 from operator import itemgetter, attrgetter
 
 import urllib
@@ -47,8 +48,6 @@ class article(object):
     
     # Some defaults
     self.article_data = None
-    self.default_article_xml_filename = "article.xml"
-
         
   def connect(self):
     """
@@ -135,6 +134,7 @@ class article(object):
     Return the article data for use in templates
     """
     
+    filename = None
     # Check for the document
     if(document is None):
       # No document? Find it on S3, save the content to
@@ -154,11 +154,25 @@ class article(object):
 
       s3_key = self.get_s3key(s3_key_name)
       contents = s3_key.get_contents_as_string()
-      self.fs.write_content_to_document(contents, self.default_article_xml_filename)
-      document = self.fs.get_document
+      
+      # Get the filename from the s3_key_name
+      try:
+        path_array = s3_key_name.split('/')
+        filename = path_array[-1]
+      except:
+        filename = "s3_article.zip"
+
+      self.fs.write_content_to_document(content = contents, filename = filename, mode = "wb")
+      document = self.fs.get_document()
+    else:
+      # Write it with the filesystem provider
+      self.fs.write_document_to_tmp_dir(document)
+    
+    # Make a copy_of the filename, to retain the file extension of the original, but not have a file overwrite itself
+    filename = "copy_of_" + self.fs.get_document()
+    document = self.fs.get_tmp_dir() + os.sep + self.fs.get_document()
     
     # Parse the file
-    filename = self.default_article_xml_filename
     parsed = self.parse_article_file(document, filename)
     return parsed
     
