@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:mml="http://www.w3.org/1998/Math/MathML">
 <head>
-<title>eLife Lens</title>
+<title>{% if article.article_title %}{{ article.article_title }} | {% endif %}eLife Lens</title>
 <script>
 document_url: "{{ xml_file_url }}"
 </script>

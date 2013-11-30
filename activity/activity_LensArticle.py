@@ -55,12 +55,13 @@ class activity_LensArticle(activity.activity):
 		elife_id = data["data"]["elife_id"]
 		
 		xml_file_url = self.get_xml_file_url(elife_id)
+		article = self.article.get_article_data(doi_id = elife_id)
 		
 		lens_article_s3key = self.get_lens_article_s3key(elife_id)
 		
 		filename = "index.html"
 		
-		article_html = self.get_article_html(xml_file_url = xml_file_url)
+		article_html = self.get_article_html(xml_file_url = xml_file_url, article = self.article)
 		
 		# Write the document to disk first
 		self.fs.write_content_to_document(article_html, filename)
@@ -98,7 +99,7 @@ class activity_LensArticle(activity.activity):
 		
 		return lens_article_s3key
 		
-	def get_article_html(self, xml_file_url, from_dir = None):
+	def get_article_html(self, xml_file_url, article = None, from_dir = None):
 		"""
 		Given the URL of the article XML file, create a lens article index.html page
 		using header, footer or template, as required
@@ -108,7 +109,7 @@ class activity_LensArticle(activity.activity):
 			from_dir = self.from_dir
 		warmed = self.warm_templates(from_dir)
 		if(warmed is True):
-			article_html = self.templates.get_lens_article_html(from_dir, xml_file_url)
+			article_html = self.templates.get_lens_article_html(from_dir, xml_file_url, article)
 			
 		return article_html
 		

@@ -88,5 +88,5 @@ Feature: Use Templates provider
     
   Examples:
     | env | tmp_base_dir  | test_name     | from_dir             | document_name	          | xml_file_url                      | article_html
-    | dev | tmp           | tmpl_provider | test_data/templates  | test_data/elife00013.xml | http://example.com/elife00013.xml | <!DOCTYPE html>\n<html xmlns:mml="http://www.w3.org/1998/Math/MathML">\n<head>\n<title>eLife Lens</title>\n<script>\ndocument_url: "http://example.com/elife00013.xml"\n</script>\n</head>\n<body>\n</body>\n</html>
+    | dev | tmp           | tmpl_provider | test_data/templates  | test_data/elife00013.xml | http://example.com/elife00013.xml | <!DOCTYPE html>\n<html xmlns:mml="http://www.w3.org/1998/Math/MathML">\n<head>\n<title>A bacterial sulfonolipid triggers multicellular development in the closest living relatives of animals \| eLife Lens</title>\n<script>\ndocument_url: "http://example.com/elife00013.xml"\n</script>\n</head>\n<body>\n</body>\n</html>
     
